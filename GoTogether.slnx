@@ -1,1 +1,6 @@
-<Solution />
+<Solution>
+  <Project Path="GoTogether.API/GoTogether.API.csproj" />
+  <Project Path="GoTogether.Application/GoTogether.Application.csproj" />
+  <Project Path="GoTogether.Domain/GoTogether.Domain.csproj" />
+  <Project Path="GoTogether.Infrastructure/GoTogether.Infrastructure.csproj" />
+</Solution>
