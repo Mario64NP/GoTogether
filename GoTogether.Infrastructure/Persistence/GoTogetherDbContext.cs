@@ -3,20 +3,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GoTogether.Infrastructure.Persistence
 {
-    public class GoTogetherDbContext : DbContext
+    public class GoTogetherDbContext(DbContextOptions<GoTogetherDbContext> options) : DbContext(options)
     {
-        public GoTogetherDbContext(DbContextOptions<GoTogetherDbContext> options)
-            : base(options)
-        {
-        }
-
         public DbSet<User> Users => Set<User>();
         public DbSet<Event> Events => Set<Event>();
         public DbSet<EventInterest> EventInterests => Set<EventInterest>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(GoTogetherDbContext).Assembly);
         }
     }
 }

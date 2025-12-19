@@ -6,5 +6,7 @@ namespace GoTogether.Domain.Entities
     {
         public string Username { get; private set; } = null!;
         public string DisplayName { get; private set; } = null!;
+
+        public ICollection<EventInterest> EventInterests { get; private set; } = [];
     }
 }

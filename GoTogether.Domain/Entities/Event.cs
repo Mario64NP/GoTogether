@@ -9,6 +9,6 @@ namespace GoTogether.Domain.Entities
         public string Location { get; set; } = null!;
         public string? Description { get; set; }
 
-        public ICollection<EventInterest> Interests { get; set; } = [];
+        public ICollection<EventInterest> EventInterests { get; private set; } = [];
     }
 }
