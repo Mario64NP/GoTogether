@@ -2,10 +2,10 @@
 
 namespace GoTogether.Domain.Entities
 {
-    public class User : Entity
+    public class User(string Username, string DisplayName) : Entity
     {
-        public string Username { get; private set; } = null!;
-        public string DisplayName { get; private set; } = null!;
+        public string Username { get; private set; } = Username;
+        public string DisplayName { get; private set; } = DisplayName;
 
         public ICollection<EventInterest> EventInterests { get; private set; } = [];
     }
