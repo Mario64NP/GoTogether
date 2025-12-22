@@ -10,5 +10,13 @@ namespace GoTogether.Domain.Entities
         public string Description { get; set; } = Description;
 
         public ICollection<EventInterest> EventInterests { get; private set; } = [];
+
+        public void Update(string title, string description, DateTime startsAt, string location)
+        {
+            Title = title;
+            Description = description;
+            StartsAt = startsAt;
+            Location = location;
+        }
     }
 }
