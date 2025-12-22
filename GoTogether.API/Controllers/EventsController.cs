@@ -2,8 +2,10 @@
 using GoTogether.API.Contracts.Interests;
 using GoTogether.Domain.Entities;
 using GoTogether.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace GoTogether.API.Controllers
 {
@@ -54,6 +56,7 @@ namespace GoTogether.API.Controllers
             return Ok(ev);
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<EventDetailsDto>> CreateEvent(CreateEventRequest req)
         {
@@ -78,6 +81,7 @@ namespace GoTogether.API.Controllers
             );
         }
 
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<ActionResult<EventDetailsDto>> UpdateEvent(Guid id, UpdateEventRequest req)
         {
@@ -107,6 +111,7 @@ namespace GoTogether.API.Controllers
             return Ok(evDto);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteEvent(Guid id)
         {
@@ -140,9 +145,12 @@ namespace GoTogether.API.Controllers
             return Ok(interests);
         }
 
+        [Authorize]
         [HttpPost("{id}/interest")]
-        public async Task<ActionResult> SignalInterest(Guid id, SignalEventInterestRequest req, [FromHeader(Name = "X-User-Id")] Guid userId)
+        public async Task<ActionResult> SignalInterest(Guid id, SignalEventInterestRequest req)
         {
+            Guid userId = GetCurrentUserId();
+
             if (!await _dbContext.Events.AnyAsync(e => e.Id == id))
                 return NotFound("Event not found");
 
@@ -158,11 +166,15 @@ namespace GoTogether.API.Controllers
             await _dbContext.SaveChangesAsync();
 
             return NoContent();
+
         }
 
+        [Authorize]
         [HttpDelete("{id}/interest")]
-        public async Task<ActionResult> RemoveInterest(Guid id, [FromHeader(Name = "X-User-Id")] Guid userId)
+        public async Task<ActionResult> RemoveInterest(Guid id)
         {
+            Guid userId = GetCurrentUserId();
+
             var interest = await _dbContext.EventInterests
                 .FirstOrDefaultAsync(ei => ei.EventId == id && ei.UserId == userId);
 
@@ -173,6 +185,11 @@ namespace GoTogether.API.Controllers
             await _dbContext.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        private Guid GetCurrentUserId()
+        {
+            return Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         }
     }
 }
