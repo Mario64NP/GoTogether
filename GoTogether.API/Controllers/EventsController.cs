@@ -121,6 +121,25 @@ namespace GoTogether.API.Controllers
             return NoContent();
         }
 
+        [HttpGet("{id}/interests")]
+        public async Task<ActionResult<IEnumerable<EventInterestResponse>>> GetEventInterests(Guid id)
+        {
+            if (!await _dbContext.Events.AnyAsync(e => e.Id == id))
+                return NotFound("Event not found");
+
+            var interests = await _dbContext.EventInterests
+                .Where(ei => ei.EventId == id)
+                .Select(ei => new EventInterestResponse(
+                    ei.User.Username,
+                    ei.User.DisplayName,
+                    ei.Message,
+                    ei.CreatedAt
+                ))
+                .ToListAsync();
+
+            return Ok(interests);
+        }
+
         [HttpPost("{id}/interest")]
         public async Task<ActionResult> SignalInterest(Guid id, SignalEventInterestRequest req, [FromHeader(Name = "X-User-Id")] Guid userId)
         {
