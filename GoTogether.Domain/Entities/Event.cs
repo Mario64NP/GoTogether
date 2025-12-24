@@ -8,6 +8,7 @@ namespace GoTogether.Domain.Entities
         public DateTime StartsAt { get; set; } = StartsAt;
         public string Location { get; set; } = Location;
         public string Description { get; set; } = Description;
+        public string? ImageFileName { get; private set; }
 
         public ICollection<EventInterest> EventInterests { get; private set; } = [];
 
@@ -17,6 +18,16 @@ namespace GoTogether.Domain.Entities
             Description = description;
             StartsAt = startsAt;
             Location = location;
+        }
+
+        public void SetImage(string fileName)
+        {
+            ImageFileName = fileName;
+        }
+
+        public void RemoveImage()
+        {
+            ImageFileName = null;
         }
     }
 }
