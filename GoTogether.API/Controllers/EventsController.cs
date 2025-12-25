@@ -14,10 +14,12 @@ namespace GoTogether.API.Controllers
     public class EventsController : ControllerBase
     {
         private readonly GoTogetherDbContext _dbContext;
+        private readonly IWebHostEnvironment _environment;
 
-        public EventsController(GoTogetherDbContext dbContext)
+        public EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment env)
         {
             _dbContext = dbContext;
+            _environment = env;
         }
 
         [HttpGet]
@@ -30,6 +32,7 @@ namespace GoTogether.API.Controllers
                     e.Title,
                     e.StartsAt,
                     e.Location,
+                    $"/uploads/images/events/{e.ImageFileName}",
                     e.EventInterests.Count
                 ))
                 .ToListAsync();
@@ -46,6 +49,7 @@ namespace GoTogether.API.Controllers
                     e.Description,
                     e.StartsAt,
                     e.Location,
+                    $"/uploads/images/events/{e.ImageFileName}",
                     e.EventInterests.Count
                 ))
                 .FirstOrDefaultAsync();
@@ -71,6 +75,7 @@ namespace GoTogether.API.Controllers
                 e.Description,
                 e.StartsAt,
                 e.Location,
+                e.ImageFileName,
                 e.EventInterests.Count
             );
 
@@ -105,6 +110,7 @@ namespace GoTogether.API.Controllers
                 ev.Description,
                 ev.StartsAt,
                 ev.Location,
+                ev.ImageFileName,
                 ev.EventInterests.Count
             );
 
@@ -185,6 +191,42 @@ namespace GoTogether.API.Controllers
             await _dbContext.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [Authorize]
+        [HttpPost("{id}/image")]
+        public async Task<ActionResult> UploadEventImage(Guid id, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            if (file.Length > 5 * 1024 * 1024)
+                return BadRequest("File too large.");
+
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+            if (!allowedTypes.Contains(file.ContentType))
+                return BadRequest("Invalid image type.");
+
+            var ev = await _dbContext.Events.FindAsync(id);
+            if (ev is null)
+                return NotFound("Event not found.");
+
+
+            var uploadsPath = Path.Combine(_environment.ContentRootPath,"uploads","images","events");
+            Directory.CreateDirectory(uploadsPath);
+
+            var extension = Path.GetExtension(file.FileName);
+            var fileName = $"{id}{extension}";
+
+            var filePath = Path.Combine(uploadsPath,fileName);
+
+            using var stream = new FileStream(filePath, FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            ev.SetImage(fileName);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new { fileName });
         }
 
         private Guid GetCurrentUserId()

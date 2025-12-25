@@ -6,6 +6,7 @@
         string Description,
         DateTime StartsAt,
         string Location,
+        string ImageUrl,
         int InterestedCount
     );
 }
