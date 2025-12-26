@@ -9,14 +9,15 @@ namespace GoTogether.API.Services.Auth
     {
         private readonly IConfiguration _configuration = configuration;
 
-        public string GenerateToken(Guid userId, string username)
+        public string GenerateToken(Guid userId, string username, string role)
         {
             var expiryHours = _configuration.GetValue<int>("Jwt:ExpiryHours", 24);
 
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-                new Claim(ClaimTypes.Name, username)
+                new Claim(ClaimTypes.Name, username),
+                new Claim(ClaimTypes.Role, role)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

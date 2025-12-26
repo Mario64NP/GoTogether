@@ -60,7 +60,7 @@ namespace GoTogether.API.Controllers
             return Ok(ev);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<EventDetailsDto>> CreateEvent(CreateEventRequest req)
         {
@@ -86,7 +86,7 @@ namespace GoTogether.API.Controllers
             );
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult<EventDetailsDto>> UpdateEvent(Guid id, UpdateEventRequest req)
         {
@@ -117,7 +117,7 @@ namespace GoTogether.API.Controllers
             return Ok(evDto);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteEvent(Guid id)
         {
@@ -200,7 +200,7 @@ namespace GoTogether.API.Controllers
             return NoContent();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPost("{id}/image")]
         public async Task<ActionResult> UploadEventImage(Guid id, IFormFile file)
         {

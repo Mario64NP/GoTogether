@@ -28,7 +28,7 @@ namespace GoTogether.API.Controllers
             _dbContext.Users.Add(u);
             await _dbContext.SaveChangesAsync();
 
-            var token = _jwt.GenerateToken(u.Id, u.Username);
+            var token = _jwt.GenerateToken(u.Id, u.Username, u.Role.ToString());
 
             return Ok(new AuthResponse(u.Id, u.Username, u.DisplayName, token));
         }
@@ -41,7 +41,7 @@ namespace GoTogether.API.Controllers
             if (user is null || _hasher.VerifyHashedPassword(user, user.PasswordHash, req.Password) == PasswordVerificationResult.Failed)
                 return Unauthorized("Invalid username or password");
 
-            var token = _jwt.GenerateToken(user.Id, user.Username);
+            var token = _jwt.GenerateToken(user.Id, user.Username, user.Role.ToString());
 
             return Ok(new AuthResponse(user.Id, user.Username, user.DisplayName, token));
         }
