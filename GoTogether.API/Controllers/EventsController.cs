@@ -126,6 +126,13 @@ namespace GoTogether.API.Controllers
             if (ev is null)
                 return NotFound();
 
+            if (!string.IsNullOrEmpty(ev.ImageFileName))
+            {
+                var path = GetLocalImagePath(ev.ImageFileName);
+                if (System.IO.File.Exists(path))
+                    System.IO.File.Delete(path);
+            }
+
             _dbContext.Events.Remove(ev);
             await _dbContext.SaveChangesAsync();
 
