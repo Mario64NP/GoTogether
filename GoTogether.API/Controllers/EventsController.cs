@@ -32,7 +32,7 @@ namespace GoTogether.API.Controllers
                     e.Title,
                     e.StartsAt,
                     e.Location,
-                    $"/uploads/images/events/{e.ImageFileName}",
+                    GetImagePath(e.ImageFileName),
                     e.EventInterests.Count
                 ))
                 .ToListAsync();
@@ -49,7 +49,7 @@ namespace GoTogether.API.Controllers
                     e.Description,
                     e.StartsAt,
                     e.Location,
-                    $"/uploads/images/events/{e.ImageFileName}",
+                    GetImagePath(e.ImageFileName),
                     e.EventInterests.Count
                 ))
                 .FirstOrDefaultAsync();
@@ -75,7 +75,7 @@ namespace GoTogether.API.Controllers
                 e.Description,
                 e.StartsAt,
                 e.Location,
-                e.ImageFileName,
+                GetImagePath(e.ImageFileName),
                 e.EventInterests.Count
             );
 
@@ -224,7 +224,6 @@ namespace GoTogether.API.Controllers
 
             var extension = Path.GetExtension(file.FileName);
             var fileName = $"{id}{extension}";
-
             var filePath = Path.Combine(uploadsPath,fileName);
 
             using var stream = new FileStream(filePath, FileMode.Create);
@@ -238,7 +237,20 @@ namespace GoTogether.API.Controllers
 
         private Guid GetCurrentUserId()
         {
-            return Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            return Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        }
+
+        private string GetLocalImagePath(string imageFileName)
+        {
+
+            return Path.Combine(_environment.ContentRootPath, "uploads", "images", "events", imageFileName);
+        }
+        private string? GetImagePath(string imageFileName)
+        {
+            if (string.IsNullOrEmpty(imageFileName)) 
+                return null;
+
+            return $"/uploads/images/events/{imageFileName}";
         }
     }
 }
