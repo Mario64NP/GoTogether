@@ -17,7 +17,7 @@ namespace GoTogether.API.Controllers
         [HttpGet("me")]
         public async Task<ActionResult<UserDetailsDto>> GetCurrentUser()
         {
-            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
 
