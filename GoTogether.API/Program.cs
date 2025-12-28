@@ -1,5 +1,6 @@
 using GoTogether.API.Services.Auth;
 using GoTogether.Domain.Entities;
+using GoTogether.Infrastructure.Files;
 using GoTogether.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -42,8 +43,9 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddScoped<AuthTokenService>();
-
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+builder.Services.AddScoped<IImagePathService, ImagePathService>();
+builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
 
 builder.Services.AddDbContext<GoTogetherDbContext>(options =>
 {

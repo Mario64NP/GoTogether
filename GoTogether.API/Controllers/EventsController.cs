@@ -1,6 +1,7 @@
 ﻿using GoTogether.API.Contracts.Events;
 using GoTogether.API.Contracts.Interests;
 using GoTogether.Domain.Entities;
+using GoTogether.Infrastructure.Files;
 using GoTogether.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,16 +12,11 @@ namespace GoTogether.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EventsController : ControllerBase
+    public class EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment env, IImagePathService paths, IImageStorageService storage) : ControllerBase
     {
-        private readonly GoTogetherDbContext _dbContext;
-        private readonly IWebHostEnvironment _environment;
-
-        public EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment env)
-        {
-            _dbContext = dbContext;
-            _environment = env;
-        }
+        private readonly GoTogetherDbContext _dbContext = dbContext;
+        private readonly IImagePathService _imagePaths = paths;
+        private readonly IImageStorageService _imageStorage = storage;
 
         [HttpGet]
         public async Task<IEnumerable<EventListItemDto>> GetEvents()
@@ -32,12 +28,13 @@ namespace GoTogether.API.Controllers
                     e.Title,
                     e.StartsAt,
                     e.Location,
-                    GetImagePath(e.ImageFileName),
+                    _imagePaths.GetEventImagePath(e.ImageFileName),
                     e.EventInterests.Count
                 ))
                 .ToListAsync();
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<EventDetailsDto>> GetEventById(Guid id)
         {
@@ -49,7 +46,7 @@ namespace GoTogether.API.Controllers
                     e.Description,
                     e.StartsAt,
                     e.Location,
-                    GetImagePath(e.ImageFileName),
+                    _imagePaths.GetEventImagePath(e.ImageFileName),
                     e.EventInterests.Count
                 ))
                 .FirstOrDefaultAsync();
@@ -75,7 +72,7 @@ namespace GoTogether.API.Controllers
                 e.Description,
                 e.StartsAt,
                 e.Location,
-                GetImagePath(e.ImageFileName),
+                _imagePaths.GetEventImagePath(e.ImageFileName),
                 e.EventInterests.Count
             );
 
@@ -127,11 +124,7 @@ namespace GoTogether.API.Controllers
                 return NotFound();
 
             if (!string.IsNullOrEmpty(ev.ImageFileName))
-            {
-                var path = GetLocalImagePath(ev.ImageFileName);
-                if (System.IO.File.Exists(path))
-                    System.IO.File.Delete(path);
-            }
+                _imageStorage.DeleteEventImage(ev.ImageFileName);
 
             _dbContext.Events.Remove(ev);
             await _dbContext.SaveChangesAsync();
@@ -218,16 +211,7 @@ namespace GoTogether.API.Controllers
             if (ev is null)
                 return NotFound("Event not found.");
 
-
-            var uploadsPath = Path.Combine(_environment.ContentRootPath,"uploads","images","events");
-            Directory.CreateDirectory(uploadsPath);
-
-            var extension = Path.GetExtension(file.FileName);
-            var fileName = $"{id}{extension}";
-            var filePath = Path.Combine(uploadsPath,fileName);
-
-            using var stream = new FileStream(filePath, FileMode.Create);
-            await file.CopyToAsync(stream);
+            var fileName = await _imageStorage.SaveEventImage(id, file);
 
             ev.SetImage(fileName);
             await _dbContext.SaveChangesAsync();
@@ -238,19 +222,6 @@ namespace GoTogether.API.Controllers
         private Guid GetCurrentUserId()
         {
             return Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        }
-
-        private string GetLocalImagePath(string imageFileName)
-        {
-
-            return Path.Combine(_environment.ContentRootPath, "uploads", "images", "events", imageFileName);
-        }
-        private string? GetImagePath(string imageFileName)
-        {
-            if (string.IsNullOrEmpty(imageFileName)) 
-                return null;
-
-            return $"/uploads/images/events/{imageFileName}";
         }
     }
 }

@@ -19,4 +19,8 @@
     <ProjectReference Include="..\GoTogether.Domain\GoTogether.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+	<FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
 </Project>
