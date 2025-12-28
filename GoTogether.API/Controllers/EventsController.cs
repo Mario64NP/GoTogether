@@ -141,6 +141,7 @@ namespace GoTogether.API.Controllers;
             var interests = await _dbContext.EventInterests
                 .Where(ei => ei.EventId == id)
                 .Select(ei => new EventInterestResponse(
+                _imagePaths.GetAvatarImagePath(ei.User.AvatarFileName),
                     ei.User.Username,
                     ei.User.DisplayName,
                     ei.Message,

@@ -2,6 +2,7 @@
 
     public record EventInterestResponse
     (
+    string? AvatarUrl,
         string Username,
         string DisplayName,
         string Message,
