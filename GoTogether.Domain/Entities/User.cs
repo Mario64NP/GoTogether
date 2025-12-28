@@ -1,7 +1,7 @@
 ﻿using GoTogether.Domain.Common;
 
-namespace GoTogether.Domain.Entities
-{
+namespace GoTogether.Domain.Entities;
+
     public class User(string Username, string DisplayName) : Entity
     {
         public string Username { get; private set; } = Username;
@@ -27,4 +27,3 @@ namespace GoTogether.Domain.Entities
         User,
         Admin
     }
-}

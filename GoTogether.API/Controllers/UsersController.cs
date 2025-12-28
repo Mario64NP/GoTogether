@@ -5,8 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
-namespace GoTogether.API.Controllers
-{
+namespace GoTogether.API.Controllers;
+
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController(GoTogetherDbContext goTogetherDbContext) : ControllerBase

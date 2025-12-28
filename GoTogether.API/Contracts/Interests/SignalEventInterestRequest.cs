@@ -1,7 +1,6 @@
-﻿namespace GoTogether.API.Contracts.Interests
-{
-    public record SignalEventInterestRequest
-    (
-        string? Message
-    );
-}
+﻿namespace GoTogether.API.Contracts.Interests;
+
+public record SignalEventInterestRequest
+(
+    string? Message
+);

@@ -1,8 +1,7 @@
-﻿namespace GoTogether.API.Contracts.Auth
-{
-    public record LoginRequest
-    (
-        string Username,
-        string Password
-    );
-}
+﻿namespace GoTogether.API.Contracts.Auth;
+
+public record LoginRequest
+(
+    string Username,
+    string Password
+);

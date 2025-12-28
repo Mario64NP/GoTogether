@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
-namespace GoTogether.API.Controllers
-{
+namespace GoTogether.API.Controllers;
+
     [ApiController]
     [Route("api/[controller]")]
     public class EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment env, IImagePathService paths, IImageStorageService storage) : ControllerBase
@@ -224,4 +224,3 @@ namespace GoTogether.API.Controllers
             return Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         }
     }
-}

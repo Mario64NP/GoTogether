@@ -1,8 +1,7 @@
-﻿namespace GoTogether.Domain.Common
+﻿namespace GoTogether.Domain.Common;
+
+public abstract class Entity
 {
-    public abstract class Entity
-    {
-        public Guid Id { get; protected set; } = Guid.NewGuid();
-        public DateTime CreatedAt { get; protected set; } = DateTime.UtcNow;
-    }
+    public Guid Id { get; protected set; } = Guid.NewGuid();
+    public DateTime CreatedAt { get; protected set; } = DateTime.UtcNow;
 }

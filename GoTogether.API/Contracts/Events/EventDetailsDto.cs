@@ -1,5 +1,5 @@
-﻿namespace GoTogether.API.Contracts.Events
-{
+﻿namespace GoTogether.API.Contracts.Events;
+
     public record EventDetailsDto(
         Guid Id,
         string Title,
@@ -9,4 +9,3 @@
         string ImageUrl,
         int InterestedCount
     );
-}
