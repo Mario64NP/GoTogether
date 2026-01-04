@@ -1,6 +1,7 @@
 ﻿using GoTogether.API.Contracts.Auth;
 using GoTogether.API.Services.Auth;
 using GoTogether.Domain.Entities;
+using GoTogether.Infrastructure.Files;
 using GoTogether.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -10,11 +11,12 @@ namespace GoTogether.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(GoTogetherDbContext goTogetherDbContext, IPasswordHasher<User> passwordHasher, AuthTokenService authTokenService) : ControllerBase
+public class AuthController(GoTogetherDbContext goTogetherDbContext, IPasswordHasher<User> passwordHasher, AuthTokenService authTokenService, IImagePathService path) : ControllerBase
 {
     private readonly GoTogetherDbContext _dbContext = goTogetherDbContext;
     private readonly IPasswordHasher<User> _hasher = passwordHasher;
     private readonly AuthTokenService _jwt = authTokenService;
+    private readonly IImagePathService _paths = path;
 
     [HttpPost("register")]
     public async Task<ActionResult<AuthResponse>> Register(RegisterRequest req)
@@ -30,7 +32,7 @@ public class AuthController(GoTogetherDbContext goTogetherDbContext, IPasswordHa
 
         var token = _jwt.GenerateToken(u.Id, u.Username, u.Role.ToString());
 
-        return Ok(new AuthResponse(u.Id, u.Username, u.DisplayName, token));
+        return Ok(new AuthResponse(u.Id, u.Username, u.DisplayName, _paths.GetAvatarImagePath(u.AvatarFileName), token));
     }
 
     [HttpPost("login")]
@@ -43,7 +45,7 @@ public class AuthController(GoTogetherDbContext goTogetherDbContext, IPasswordHa
 
         var token = _jwt.GenerateToken(user.Id, user.Username, user.Role.ToString());
 
-        return Ok(new AuthResponse(user.Id, user.Username, user.DisplayName, token));
+        return Ok(new AuthResponse(user.Id, user.Username, user.DisplayName, _paths.GetAvatarImagePath(user.AvatarFileName), token));
     }
 
 }
