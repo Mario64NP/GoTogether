@@ -14,12 +14,14 @@ public static class DbInitializer
                     "Techno Night",
                     DateTime.Now.AddDays(7),
                     "Drugstore, Belgrade",
+                    "Music",
                     "Late-night techno session"
                 ),
                 new Event(
                     "Indie Gig",
                     DateTime.Now.AddDays(10),
                     "KC Grad, Belgrade",
+                    "Music",
                     "Small venue, good vibes"
                 ),
             };

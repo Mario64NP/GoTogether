@@ -28,6 +28,7 @@ public class EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment
                 e.Title,
                 e.StartsAt,
                 e.Location,
+                e.Category,
                 _imagePaths.GetEventImagePath(e.ImageFileName),
                 e.EventInterests.Count
             ))
@@ -46,6 +47,7 @@ public class EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment
                 e.Description,
                 e.StartsAt,
                 e.Location,
+                e.Category,
                 _imagePaths.GetEventImagePath(e.ImageFileName),
                 e.EventInterests.Count
             ))
@@ -61,7 +63,7 @@ public class EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment
     [HttpPost]
     public async Task<ActionResult<EventDetailsDto>> CreateEvent(CreateEventRequest req)
     {
-        Event e = new(req.Title, req.StartsAt, req.Location, req.Description);
+        Event e = new(req.Title, req.StartsAt, req.Location, req.Category, req.Description);
 
         _dbContext.Events.Add(e);
         await _dbContext.SaveChangesAsync();
@@ -72,6 +74,7 @@ public class EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment
             e.Description,
             e.StartsAt,
             e.Location,
+            e.Category,
             _imagePaths.GetEventImagePath(e.ImageFileName),
             e.EventInterests.Count
         );
@@ -96,7 +99,8 @@ public class EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment
             req.Title,
             req.Description,
             req.StartsAt,
-            req.Location
+            req.Location,
+            req.Category
         );
 
         await _dbContext.SaveChangesAsync();
@@ -107,6 +111,7 @@ public class EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment
             ev.Description,
             ev.StartsAt,
             ev.Location,
+            ev.Category,
             ev.ImageFileName,
             ev.EventInterests.Count
         );

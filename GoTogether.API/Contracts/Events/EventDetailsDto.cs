@@ -6,6 +6,7 @@ public record EventDetailsDto(
     string Description,
     DateTime StartsAt,
     string Location,
+    string Category,
     string? ImageUrl,
     int InterestedCount
 );

@@ -5,6 +5,7 @@ public record EventListItemDto(
     string Title,
     DateTime StartsAt,
     string Location,
+    string Category,
     string? ImageUrl,
     int InterestedCount
 );

@@ -5,5 +5,6 @@ public record UpdateEventRequest
     string Title,
     string Description,
     DateTime StartsAt,
-    string Location
+    string Location,
+    string Category
 );
