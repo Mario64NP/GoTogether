@@ -25,5 +25,12 @@ public class EventInterestConfiguration : IEntityTypeConfiguration<EventInterest
         builder
             .Property(ei => ei.Message)
             .HasMaxLength(500);
+
+        builder
+            .HasIndex(ei => new { ei.EventId, ei.UserId })
+            .IsUnique();
+
+        builder
+            .HasIndex(ei => ei.UserId);
     }
 }
