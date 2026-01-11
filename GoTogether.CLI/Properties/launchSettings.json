@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GoTogether.CLI": {
+      "commandName": "Project",
+      "commandLineArgs": "event remove-interest all --eventId e3f7cbef-77dc-4ea9-89d8-5677ca1bd7bd"
+    }
+  }
+}
