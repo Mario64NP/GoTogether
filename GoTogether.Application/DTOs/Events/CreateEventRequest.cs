@@ -1,4 +1,4 @@
-﻿namespace GoTogether.API.Contracts.Events;
+﻿namespace GoTogether.Application.DTOs.Events;
 
 public record CreateEventRequest(
 

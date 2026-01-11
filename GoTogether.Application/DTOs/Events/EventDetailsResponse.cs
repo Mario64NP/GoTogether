@@ -1,6 +1,6 @@
-﻿namespace GoTogether.API.Contracts.Events;
+﻿namespace GoTogether.Application.DTOs.Events;
 
-public record EventDetailsDto(
+public record EventDetailsResponse(
     Guid Id,
     string Title,
     string Description,

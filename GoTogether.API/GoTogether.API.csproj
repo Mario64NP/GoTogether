@@ -14,10 +14,11 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Scalar.AspNetCore" Version="2.11.9" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.11.10" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\GoTogether.Application\GoTogether.Application.csproj" />
     <ProjectReference Include="..\GoTogether.Infrastructure\GoTogether.Infrastructure.csproj" />
   </ItemGroup>
 

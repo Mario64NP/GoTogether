@@ -27,26 +27,8 @@ public static class DbInitializer
             };
 
             context.Events.AddRange(events);
+
+            context.SaveChanges();
         }
-
-        if (!context.Users.Any())
-        {
-            var users = new[]
-            {
-                new User(
-                    "urio",
-                    "Ma. Rio"
-                ),
-                new User(
-                    "igy.jov",
-                    "Manijak"
-                ),
-            };
-
-            context.Users.AddRange(users);
-        }
-
-
-        context.SaveChanges();
     }
 }

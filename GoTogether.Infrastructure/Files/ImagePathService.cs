@@ -1,22 +1,23 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using GoTogether.Application.Services.Interfaces;
+using GoTogether.Infrastructure.Persistence;
 
 namespace GoTogether.Infrastructure.Files;
 
-public class ImagePathService(IWebHostEnvironment env) : IImagePathService
+public class ImagePathService(InfrastructurePaths paths) : IImagePathService
 {
-    private readonly IWebHostEnvironment _environment = env;
+    private readonly string rootPath = paths.Root;
 
     public string GetAvatarDirectory()
     {
-        return Path.Combine(_environment.ContentRootPath, "uploads", "images", "users");
+        return Path.Combine(rootPath, "uploads", "images", "users");
     }
 
     public string GetEventImageDirectory()
     {
-        return Path.Combine(_environment.ContentRootPath, "uploads", "images", "events");
+        return Path.Combine(rootPath, "uploads", "images", "events");
     }
 
-    public string? GetAvatarImagePath(string? imageFileName)
+    public string? GetAvatarPath(string? imageFileName)
     {
         if (string.IsNullOrEmpty(imageFileName))
             return null;
@@ -24,9 +25,9 @@ public class ImagePathService(IWebHostEnvironment env) : IImagePathService
         return $"uploads/images/users/{imageFileName}";
     }
 
-    public string GetAvatarLocalImagePath(string imageFileName)
+    public string GetAvatarLocalPath(string imageFileName)
     {
-        return Path.Combine(_environment.ContentRootPath, "uploads", "images", "users", imageFileName);
+        return Path.Combine(GetAvatarDirectory(), imageFileName);
     }
 
     public string? GetEventImagePath(string? imageFileName)
@@ -37,8 +38,8 @@ public class ImagePathService(IWebHostEnvironment env) : IImagePathService
         return $"uploads/images/events/{imageFileName}";
     }
 
-    public string GetEventLocalImagePath(string imageFileName)
+    public string GetEventImageLocalPath(string imageFileName)
     {
-        return Path.Combine(_environment.ContentRootPath, "uploads", "images", "events", imageFileName);
+        return Path.Combine(GetEventImageDirectory(), imageFileName);
     }
 }

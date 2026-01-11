@@ -1,4 +1,4 @@
-﻿namespace GoTogether.API.Contracts.Auth;
+﻿namespace GoTogether.Application.DTOs.Auth;
 
 public record AuthResponse
 (

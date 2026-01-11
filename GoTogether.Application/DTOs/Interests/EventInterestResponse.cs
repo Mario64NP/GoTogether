@@ -1,4 +1,4 @@
-﻿namespace GoTogether.API.Contracts.Interests;
+﻿namespace GoTogether.Application.DTOs.Interests;
 
 public record EventInterestResponse
 (

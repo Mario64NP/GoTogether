@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using GoTogether.Application.DTOs.Files;
+using GoTogether.Application.Services.Interfaces;
 
 namespace GoTogether.Infrastructure.Files;
 
@@ -14,41 +15,41 @@ public class ImageStorageService : IImageStorageService
         Directory.CreateDirectory(_paths.GetEventImageDirectory());
     }
 
-    public async Task<string> SaveProfileAvatar(Guid id, IFormFile file)
+    public async Task<string> SaveProfileAvatarAsync(Guid id, FileRequest file)
     {
         var extension = Path.GetExtension(file.FileName);
         var localFileName = $"{id}{extension}";
-        var localFilePath = _paths.GetAvatarLocalImagePath(localFileName);
+        var localFilePath = _paths.GetAvatarLocalPath(localFileName);
 
         using var stream = new FileStream(localFilePath, FileMode.Create);
-        await file.CopyToAsync(stream);
+        await file.Content.CopyToAsync(stream);
 
         return localFileName;
     }
 
-    public void DeleteProfileAvatar(string fileName)
+    public async void DeleteProfileAvatarAsync(string fileName)
     {
-        var path = _paths.GetAvatarLocalImagePath(fileName);
+        var path = _paths.GetAvatarLocalPath(fileName);
 
         if (File.Exists(path))
             File.Delete(path);
     }
 
-    public async Task<string> SaveEventImage(Guid id, IFormFile file)
+    public async Task<string> SaveEventImageAsync(Guid id, FileRequest file)
     {
         var extension = Path.GetExtension(file.FileName);
         var localFileName = $"{id}{extension}";
-        var localFilePath = _paths.GetEventLocalImagePath(localFileName);
+        var localFilePath = _paths.GetEventImageLocalPath(localFileName);
 
         using var stream = new FileStream(localFilePath, FileMode.Create);
-        await file.CopyToAsync(stream);
+        await file.Content.CopyToAsync(stream);
 
         return localFileName;
     }
 
-    public void DeleteEventImage(string fileName)
+    public async void DeleteEventImageAsync(string fileName)
     {
-        var path = _paths.GetEventLocalImagePath(fileName);
+        var path = _paths.GetEventImageLocalPath(fileName);
 
         if (File.Exists(path))
             File.Delete(path);

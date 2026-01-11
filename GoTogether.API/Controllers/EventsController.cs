@@ -1,222 +1,102 @@
-﻿using GoTogether.API.Contracts.Events;
-using GoTogether.API.Contracts.Interests;
-using GoTogether.Domain.Entities;
-using GoTogether.Infrastructure.Files;
-using GoTogether.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Authorization;
+﻿using GoTogether.Application.DTOs.Files;
+using GoTogether.Application.DTOs.Events;
+using GoTogether.Application.DTOs.Interests;
+using GoTogether.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace GoTogether.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment env, IImagePathService paths, IImageStorageService storage) : ControllerBase
+public class EventsController(IEventService eventService, IUserService userService) : ControllerBase
 {
-    private readonly GoTogetherDbContext _dbContext = dbContext;
-    private readonly IImagePathService _imagePaths = paths;
-    private readonly IImageStorageService _imageStorage = storage;
-
     [HttpGet]
-    public async Task<IEnumerable<EventListItemDto>> GetEvents()
-    {
-        return await _dbContext.Events
-            .OrderBy(e => e.StartsAt)
-            .Select(e => new EventListItemDto(
-                e.Id,
-                e.Title,
-                e.StartsAt,
-                e.Location,
-                e.Category,
-                _imagePaths.GetEventImagePath(e.ImageFileName),
-                e.EventInterests.Count
-            ))
-            .ToListAsync();
-    }
+    public async Task<IEnumerable<EventListItemResponse>> GetEvents() => await eventService.GetAllEventsAsync();
 
     [Authorize]
-    [HttpGet("{id}")]
-    public async Task<ActionResult<EventDetailsDto>> GetEventById(Guid id)
-    {
-        var ev = await _dbContext.Events
-            .Where(e => e.Id == id)
-            .Select(e => new EventDetailsDto(
-                e.Id,
-                e.Title,
-                e.Description,
-                e.StartsAt,
-                e.Location,
-                e.Category,
-                _imagePaths.GetEventImagePath(e.ImageFileName),
-                e.EventInterests.Count
-            ))
-            .FirstOrDefaultAsync();
-
-        if (ev is null)
-            return NotFound();
-
-        return Ok(ev);
-    }
+    [HttpGet("{eventId}")]
+    public async Task<ActionResult<EventDetailsResponse?>> GetEventById(Guid eventId) => Ok(await eventService.GetEventByIdAsync(eventId));
 
     [Authorize(Roles = "Admin")]
     [HttpPost]
-    public async Task<ActionResult<EventDetailsDto>> CreateEvent(CreateEventRequest req)
+    public async Task<ActionResult<EventDetailsResponse>> CreateEvent(CreateEventRequest req)
     {
-        Event e = new(req.Title, req.StartsAt, req.Location, req.Category, req.Description);
+        var e = await eventService.CreateEventAsync(req);
 
-        _dbContext.Events.Add(e);
-        await _dbContext.SaveChangesAsync();
-
-        var evDto = new EventDetailsDto(
-            e.Id,
-            e.Title,
-            e.Description,
-            e.StartsAt,
-            e.Location,
-            e.Category,
-            _imagePaths.GetEventImagePath(e.ImageFileName),
-            e.EventInterests.Count
-        );
-
-        return CreatedAtAction(
-            nameof(GetEventById),
-            new { id = e.Id },
-            evDto
-        );
+        return CreatedAtAction(nameof(GetEventById), new { eventId = e.Id }, e);
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPut("{id}")]
-    public async Task<ActionResult<EventDetailsDto>> UpdateEvent(Guid id, UpdateEventRequest req)
-    {
-        var ev = await _dbContext.Events.FindAsync(id);
-
-        if (ev is null)
-            return NotFound();
-
-        ev.Update(
-            req.Title,
-            req.Description,
-            req.StartsAt,
-            req.Location,
-            req.Category
-        );
-
-        await _dbContext.SaveChangesAsync();
-
-        var evDto = new EventDetailsDto(
-            ev.Id,
-            ev.Title,
-            ev.Description,
-            ev.StartsAt,
-            ev.Location,
-            ev.Category,
-            ev.ImageFileName,
-            ev.EventInterests.Count
-        );
-
-        return Ok(evDto);
-    }
+    [HttpPut("{eventId}")]
+    public async Task<ActionResult<EventDetailsResponse>> UpdateEvent(Guid eventId, UpdateEventRequest req) => Ok(await eventService.UpdateEventAsync(eventId, req));
 
     [Authorize(Roles = "Admin")]
-    [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteEvent(Guid id)
+    [HttpDelete("{eventId}")]
+    public async Task<ActionResult> DeleteEvent(Guid eventId)
     {
-        var ev = await _dbContext.Events.FindAsync(id);
-
-        if (ev is null)
-            return NotFound();
-
-        if (!string.IsNullOrEmpty(ev.ImageFileName))
-            _imageStorage.DeleteEventImage(ev.ImageFileName);
-
-        _dbContext.Events.Remove(ev);
-        await _dbContext.SaveChangesAsync();
+        await eventService.DeleteEventAsync(eventId);
 
         return NoContent();
     }
 
-    [HttpGet("{id}/interests")]
-    public async Task<ActionResult<IEnumerable<EventInterestResponse>>> GetEventInterests(Guid id)
-    {
-        if (!await _dbContext.Events.AnyAsync(e => e.Id == id))
-            return NotFound("Event not found");
-
-        var interests = await _dbContext.EventInterests
-            .Where(ei => ei.EventId == id)
-            .Select(ei => new EventInterestResponse(
-                _imagePaths.GetAvatarImagePath(ei.User.AvatarFileName),
-                ei.User.Username,
-                ei.User.DisplayName,
-                ei.Message,
-                ei.CreatedAt
-            ))
-            .ToListAsync();
-
-        return Ok(interests);
-    }
+    [HttpGet("{eventId}/interests")]
+    public async Task<ActionResult<IEnumerable<EventInterestResponse>>> GetEventInterests(Guid eventId) => Ok(await eventService.GetEventInterestsAsync(eventId));
 
     [Authorize]
-    [HttpGet("{id}/interest")]
-    public async Task<ActionResult<bool>> GetInterest(Guid id)
+    [HttpGet("{eventId}/interest")]
+    public async Task<ActionResult<bool>> GetInterest(Guid eventId)
     {
         Guid userId = GetCurrentUserId();
 
-        if (!await _dbContext.Events.AnyAsync(e => e.Id == id))
+        if (await eventService.GetEventByIdAsync(eventId) is null)
             return NotFound("Event not found");
 
-        if (!await _dbContext.Users.AnyAsync(u => u.Id == userId))
+        if (await userService.GetUserByIdAsync(userId) is null)
             return BadRequest("Invalid user");
 
-        return Ok(await _dbContext.EventInterests.AnyAsync(ei => ei.EventId == id && ei.UserId == userId));
+        return Ok(await eventService.GetUserInterestAsync(userId, eventId));
     }
 
     [Authorize]
-    [HttpPost("{id}/interest")]
-    public async Task<ActionResult> SignalInterest(Guid id, SignalEventInterestRequest req)
+    [HttpPost("{eventId}/interest")]
+    public async Task<ActionResult> SignalInterest(Guid eventId, SignalEventInterestRequest req)
     {
         Guid userId = GetCurrentUserId();
 
-        if (!await _dbContext.Events.AnyAsync(e => e.Id == id))
+        if (await eventService.GetEventByIdAsync(eventId) is null)
             return NotFound("Event not found");
 
-        if (!await _dbContext.Users.AnyAsync(u => u.Id == userId))
+        if (await userService.GetUserByIdAsync(userId) is null)
             return BadRequest("Invalid user");
 
-        if (await _dbContext.EventInterests.AnyAsync(ei => ei.EventId == id && ei.UserId == userId))
+        if (await eventService.GetUserInterestAsync(userId, eventId))
             return Conflict("User has already signaled interest for this event");
 
-        EventInterest interest = new(userId, id, req.Message);
-
-        _dbContext.EventInterests.Add(interest);
-        await _dbContext.SaveChangesAsync();
+        await eventService.SignalInterestAsync(userId, eventId, req);
 
         return NoContent();
 
     }
 
     [Authorize]
-    [HttpDelete("{id}/interest")]
-    public async Task<ActionResult> RemoveInterest(Guid id)
+    [HttpDelete("{eventId}/interest")]
+    public async Task<ActionResult> RemoveInterest(Guid eventId)
     {
         Guid userId = GetCurrentUserId();
 
-        var interest = await _dbContext.EventInterests
-            .FirstOrDefaultAsync(ei => ei.EventId == id && ei.UserId == userId);
-
-        if (interest is null)
+        if (!await eventService.GetUserInterestAsync(userId, eventId))
             return NotFound("Interest not found");
 
-        _dbContext.EventInterests.Remove(interest);
-        await _dbContext.SaveChangesAsync();
+        await eventService.RemoveInterestAsync(userId, eventId);
 
         return NoContent();
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPost("{id}/image")]
-    public async Task<ActionResult> UploadEventImage(Guid id, IFormFile file)
+    [HttpPost("{eventId}/image")]
+    public async Task<ActionResult> UploadEventImage(Guid eventId, IFormFile file)
     {
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");
@@ -228,20 +108,17 @@ public class EventsController(GoTogetherDbContext dbContext, IWebHostEnvironment
         if (!allowedTypes.Contains(file.ContentType))
             return BadRequest("Invalid image type.");
 
-        var ev = await _dbContext.Events.FindAsync(id);
-        if (ev is null)
+        if (eventService.GetEventByIdAsync(eventId) is null)
             return NotFound("Event not found.");
 
-        var fileName = await _imageStorage.SaveEventImage(id, file);
+        using var stream = file.OpenReadStream();
 
-        ev.SetImage(fileName);
-        await _dbContext.SaveChangesAsync();
+        var req = new FileRequest(file.FileName, file.ContentType, stream);
+
+        var fileName = await eventService.SaveEventImageAsync(eventId, req);
 
         return Ok(new { fileName });
     }
 
-    private Guid GetCurrentUserId()
-    {
-        return Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-    }
+    private Guid GetCurrentUserId() => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 }

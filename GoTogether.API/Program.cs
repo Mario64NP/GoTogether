@@ -1,89 +1,41 @@
-using GoTogether.API.Services.Auth;
-using GoTogether.Domain.Entities;
-using GoTogether.Infrastructure.Files;
+using GoTogether.API.Extensions;
+using GoTogether.Application;
+using GoTogether.Infrastructure;
 using GoTogether.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(key)
-    };
-});
-
+builder.Services.AddControllers();
+builder.Services.AddOpenApi();
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllers();
+builder.Services.AddApiAuthentication(builder.Configuration);
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructurePaths();
 
-builder.Services.AddOpenApi();
-
-builder.Services.AddScoped<AuthTokenService>();
-builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-builder.Services.AddScoped<IImagePathService, ImagePathService>();
-builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
-
-builder.Services.AddDbContext<GoTogetherDbContext>(options =>
-{
-    options.UseSqlite("Data Source=GoTogether.db");
-});
+if (builder.Environment.IsDevelopment())
+    builder.Services.AddDevAuthLogging();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<GoTogetherDbContext>();
-    DbInitializer.Seed(db);
-}
-
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<GoTogetherDbContext>();
+    db.Database.Migrate();
+    DbInitializer.Seed(db);
+
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();
 
-app.Use(async (context, next) =>
-{
-    if (context.Request.Path.StartsWithSegments("/uploads/images"))
-    {
-        Console.WriteLine($"[IMAGE REQUEST]: {context.Request.Path}");
-    }
-    await next();
-});
-
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "uploads")),
-    RequestPath = "/uploads"
-});
+app.UseImageLogging();
+app.UseUploadsStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

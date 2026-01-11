@@ -1,6 +1,6 @@
-﻿namespace GoTogether.API.Contracts.Users;
+﻿namespace GoTogether.Application.DTOs.Users;
 
-public record UserDetailsDto
+public record UserDetailsResponse
 (
     Guid Id,
     string Username,

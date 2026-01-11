@@ -1,48 +1,39 @@
-﻿using GoTogether.API.Contracts.Users;
-using GoTogether.Infrastructure.Files;
-using GoTogether.Infrastructure.Persistence;
+﻿using GoTogether.Application.DTOs.Files;
+using GoTogether.Application.DTOs.Users;
+using GoTogether.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace GoTogether.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UsersController(GoTogetherDbContext goTogetherDbContext, IImagePathService paths, IImageStorageService storage) : ControllerBase
+public class UsersController(IUserService userService) : ControllerBase
 {
-    private readonly GoTogetherDbContext _dbContext = goTogetherDbContext;
-    private readonly IImagePathService _imagePaths = paths;
-    private readonly IImageStorageService _imageStorage = storage;
-
     [Authorize]
     [HttpGet("me")]
-    public async Task<ActionResult<UserDetailsDto>> GetCurrentUser()
+    public async Task<ActionResult<UserDetailsResponse>> GetCurrentUser()
     {
         Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await userService.GetUserByIdAsync(userId);
 
         if (user is null)
             return NotFound();
 
-        var userDto = new UserDetailsDto(user.Id, user.Username, user.DisplayName, _imagePaths.GetAvatarImagePath(user.AvatarFileName));
-
-        return Ok(userDto);
+        return Ok(user);
     }
 
     [HttpGet("{username}")]
-    public async Task<ActionResult<UserDetailsDto>> GetUserByUsername(string username)
+    public async Task<ActionResult<UserDetailsResponse>> GetUserByUsername(string username)
     {
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
+        var user = await userService.GetUserByUsernameAsync(username);
 
         if (user is null)
             return NotFound();
 
-        var userDto = new UserDetailsDto(user.Id, user.Username, user.DisplayName, _imagePaths.GetAvatarImagePath(user.AvatarFileName));
-
-        return Ok(userDto);
+        return Ok(user);
     }
 
     [Authorize]
@@ -61,15 +52,11 @@ public class UsersController(GoTogetherDbContext goTogetherDbContext, IImagePath
 
         Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        using var stream = file.OpenReadStream();
 
-        if (user is null)
-            return NotFound("User not found.");
+        var req = new FileRequest(file.FileName, file.ContentType, stream);
 
-        var fileName = await _imageStorage.SaveProfileAvatar(userId, file);
-
-        user.SetAvatar(fileName);
-        await _dbContext.SaveChangesAsync();
+        var fileName = await userService.SaveAvatarAsync(userId, req);
 
         return Ok(new { fileName });
     }

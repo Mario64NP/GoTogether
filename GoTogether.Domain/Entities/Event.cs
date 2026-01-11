@@ -13,13 +13,13 @@ public class Event(string Title, DateTime StartsAt, string Location, string Cate
 
     public ICollection<EventInterest> EventInterests { get; private set; } = [];
 
-    public void Update(string title, string description, DateTime startsAt, string location, string category)
+    public void Update(string? title, string? description, DateTime? startsAt, string? location, string? category)
     {
-        Title = title;
-        Description = description;
-        StartsAt = startsAt;
-        Location = location;
-        Category = category;
+        Title = title ?? Title;
+        Description = description ?? Description;
+        StartsAt = startsAt ?? StartsAt;
+        Location = location ?? Location;
+        Category = category ?? Category;
     }
 
     public void SetImage(string fileName)

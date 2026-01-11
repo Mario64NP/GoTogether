@@ -12,25 +12,15 @@ public class User(string Username, string DisplayName) : Entity
 
     public ICollection<EventInterest> EventInterests { get; private set; } = [];
 
-    public void SetPassword(string hash)
-    {
-        PasswordHash = hash;
-    }
+    public void SetPassword(string hash) => PasswordHash = hash;
 
-    public void PromoteToAdmin()
-    {
-        Role = UserRole.Admin;
-    }
+    public void PromoteToAdmin() => Role = UserRole.Admin;
 
-    public void SetAvatar(string fileName)
-    {
-        AvatarFileName = fileName;
-    }
+    public void DemoteToUser() => Role = UserRole.User;
 
-    public void RemoveAvatar()
-    {
-        AvatarFileName = null;
-    }
+    public void SetAvatar(string fileName) => AvatarFileName = fileName;
+
+    public void RemoveAvatar() => AvatarFileName = null;
 }
 
 public enum UserRole
