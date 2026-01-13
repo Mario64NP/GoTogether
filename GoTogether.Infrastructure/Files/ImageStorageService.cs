@@ -17,7 +17,13 @@ public class ImageStorageService : IImageStorageService
 
     public async Task<string> SaveProfileAvatarAsync(Guid id, FileRequest file)
     {
-        var extension = Path.GetExtension(file.FileName);
+        var extension = file.ContentType switch
+        {
+            "image/jpeg" => ".jpg",
+            "image/png" => ".png",
+            "image/webp" => ".webp",
+            _ => throw new InvalidOperationException("Invalid type")
+        };
         var localFileName = $"{id}{extension}";
         var localFilePath = _paths.GetAvatarLocalPath(localFileName);
 
@@ -37,7 +43,13 @@ public class ImageStorageService : IImageStorageService
 
     public async Task<string> SaveEventImageAsync(Guid id, FileRequest file)
     {
-        var extension = Path.GetExtension(file.FileName);
+        var extension = file.ContentType switch
+        {
+            "image/jpeg" => ".jpg",
+            "image/png" => ".png",
+            "image/webp" => ".webp",
+            _ => throw new InvalidOperationException("Invalid type")
+        };
         var localFileName = $"{id}{extension}";
         var localFilePath = _paths.GetEventImageLocalPath(localFileName);
 
