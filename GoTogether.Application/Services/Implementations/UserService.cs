@@ -42,6 +42,9 @@ public class UserService(IUserRepository users, IImagePathService paths, IImageS
         if (user is null)
             return null;
 
+        if (!string.IsNullOrEmpty(user.AvatarFileName))
+            await storage.DeleteProfileAvatarAsync(user.AvatarFileName);
+
         var fileName = await storage.SaveProfileAvatarAsync(userId, req);
         user.SetAvatar(fileName);
 

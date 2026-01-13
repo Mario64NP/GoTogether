@@ -77,6 +77,9 @@ public class EventService(IEventRepository events, IImagePathService paths, IIma
         if (ev is null)
             return null;
 
+        if (!string.IsNullOrEmpty(ev.ImageFileName))
+            await storage.DeleteProfileAvatarAsync(ev.ImageFileName);
+
         var fileName = await storage.SaveEventImageAsync(eventId, file);
         ev.SetImage(fileName);
         
