@@ -1,8 +1,10 @@
-﻿namespace GoTogether.Application.DTOs.Auth;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace GoTogether.Application.DTOs.Auth;
 
 public record RegisterRequest
 (
-    string Username,
-    string DisplayName,
-    string Password
+    [Required][StringLength(30)] string Username,
+    [Required][StringLength(50)] string DisplayName,
+    [Required][StringLength(100)] string Password
 );

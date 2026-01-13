@@ -1,6 +1,8 @@
-﻿namespace GoTogether.Application.DTOs.Interests;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace GoTogether.Application.DTOs.Interests;
 
 public record SignalEventInterestRequest
 (
-    string? Message
+    [StringLength(500)] string? Message
 );

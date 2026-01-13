@@ -1,10 +1,12 @@
-﻿namespace GoTogether.Application.DTOs.Events;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace GoTogether.Application.DTOs.Events;
 
 public record UpdateEventRequest
 (
-    string? Title,
-    string? Description,
+    [StringLength(200)] string? Title,
+    [StringLength(1500)] string? Description,
     DateTime? StartsAt,
-    string? Location,
-    string? Category
+    [StringLength(100)] string? Location,
+    [StringLength(15)] string? Category
 );
