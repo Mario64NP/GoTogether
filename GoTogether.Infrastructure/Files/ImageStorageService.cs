@@ -27,7 +27,7 @@ public class ImageStorageService : IImageStorageService
         return localFileName;
     }
 
-    public async void DeleteProfileAvatarAsync(string fileName)
+    public async Task DeleteProfileAvatarAsync(string fileName)
     {
         var path = _paths.GetAvatarLocalPath(fileName);
 
@@ -47,7 +47,7 @@ public class ImageStorageService : IImageStorageService
         return localFileName;
     }
 
-    public async void DeleteEventImageAsync(string fileName)
+    public async Task DeleteEventImageAsync(string fileName)
     {
         var path = _paths.GetEventImageLocalPath(fileName);
 
