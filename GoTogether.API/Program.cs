@@ -11,15 +11,17 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddAuthorization();
 
-builder.Services.AddApiAuthentication(builder.Configuration);
+builder.Services.AddApiSecurity(builder.Configuration);
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
 builder.Services.AddInfrastructurePaths();
 
 if (builder.Environment.IsDevelopment())
-    builder.Services.AddDevAuthLogging();
+    builder.Services.AddDevTools();
 
 var app = builder.Build();
+
+app.UseApiSecurityConfiguration();
 
 if (app.Environment.IsDevelopment())
 {

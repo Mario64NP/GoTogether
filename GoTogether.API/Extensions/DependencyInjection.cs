@@ -1,15 +1,17 @@
-﻿using GoTogether.Infrastructure.Persistence;
+﻿using GoTogether.API.Authorization;
+using GoTogether.API.Middleware;
+using GoTogether.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 namespace GoTogether.API.Extensions;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApiAuthentication(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddApiSecurity(this IServiceCollection services, IConfiguration configuration)
     {
         var jwtSettings = configuration.GetSection("Jwt");
         var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
@@ -33,10 +35,38 @@ public static class DependencyInjection
             };
         });
 
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
+
+        services.AddRateLimiter(options =>
+        {
+            options.AddPolicy("strict", httpContext =>
+            RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+                factory: partition => new FixedWindowRateLimiterOptions
+                {
+                    AutoReplenishment = true,
+                    Window = TimeSpan.FromSeconds(10),
+                    PermitLimit = 5,
+                    QueueLimit = 0
+                }));
+
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        });
+
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                                       Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
+
         return services;
     }
 
-    public static IServiceCollection AddDevAuthLogging(this IServiceCollection services)
+    public static IServiceCollection AddDevTools(this IServiceCollection services)
     {
         services.AddSingleton<IAuthorizationHandler, LogFailureHandler>();
 
@@ -50,31 +80,5 @@ public static class DependencyInjection
         services.AddSingleton(new InfrastructurePaths(basePath));
 
         return services;
-    }
-}
-
-public class LogFailureHandler : AuthorizationHandler<RolesAuthorizationRequirement>
-{
-    protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RolesAuthorizationRequirement requirement)
-    {
-        var hasRole = requirement.AllowedRoles.Any(r => context.User.IsInRole(r));
-
-        if (!hasRole)
-        {
-            var user = context.User.Identity?.Name ?? "Anonymous";
-            var roles = context.User.Claims
-                .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role || c.Type == "role")
-                .Select(c => c.Value).ToList();
-
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("\n=========================================================");
-            Console.WriteLine("[AUTHORIZATION FAILURE]");
-            Console.WriteLine($"User: {user} | Path: {((DefaultHttpContext)context.Resource!).Request.Path}");
-            Console.WriteLine($"Required: {string.Join(", ", requirement.AllowedRoles)} | Actual: {(roles.Any() ? string.Join(", ", roles) : "NONE")}");
-            Console.WriteLine("=========================================================\n");
-            Console.ResetColor();
-        }
-
-        return Task.CompletedTask;
     }
 }

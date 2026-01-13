@@ -27,7 +27,7 @@ public class ImagePathService(InfrastructurePaths paths) : IImagePathService
 
     public string GetAvatarLocalPath(string imageFileName)
     {
-        return Path.Combine(GetAvatarDirectory(), imageFileName);
+        return Path.Combine(GetAvatarDirectory(), Path.GetFileName(imageFileName));
     }
 
     public string? GetEventImagePath(string? imageFileName)
@@ -40,6 +40,6 @@ public class ImagePathService(InfrastructurePaths paths) : IImagePathService
 
     public string GetEventImageLocalPath(string imageFileName)
     {
-        return Path.Combine(GetEventImageDirectory(), imageFileName);
+        return Path.Combine(GetEventImageDirectory(), Path.GetFileName(imageFileName));
     }
 }

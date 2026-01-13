@@ -1,9 +1,11 @@
-﻿using GoTogether.Application.DTOs.Files;
+﻿using GoTogether.API.Extensions;
 using GoTogether.Application.DTOs.Events;
+using GoTogether.Application.DTOs.Files;
 using GoTogether.Application.DTOs.Interests;
 using GoTogether.Application.Services.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace GoTogether.API.Controllers;
@@ -61,6 +63,7 @@ public class EventsController(IEventService eventService, IUserService userServi
 
     [Authorize]
     [HttpPost("{eventId}/interest")]
+    [EnableRateLimiting("strict")]
     public async Task<ActionResult> SignalInterest(Guid eventId, SignalEventInterestRequest req)
     {
         Guid userId = GetCurrentUserId();
@@ -96,19 +99,13 @@ public class EventsController(IEventService eventService, IUserService userServi
 
     [Authorize(Roles = "Admin")]
     [HttpPost("{eventId}/image")]
+    [EnableRateLimiting("strict")]
     public async Task<ActionResult> UploadEventImage(Guid eventId, IFormFile file)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded.");
+        if (!await file.IsValidImageAsync())
+            return BadRequest("Invalid image. Please upload a JPEG, PNG, or WebP under 5MB.");
 
-        if (file.Length > 5 * 1024 * 1024)
-            return BadRequest("File too large.");
-
-        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
-        if (!allowedTypes.Contains(file.ContentType))
-            return BadRequest("Invalid image type.");
-
-        if (eventService.GetEventByIdAsync(eventId) is null)
+        if (await eventService.GetEventByIdAsync(eventId) is null)
             return NotFound("Event not found.");
 
         using var stream = file.OpenReadStream();

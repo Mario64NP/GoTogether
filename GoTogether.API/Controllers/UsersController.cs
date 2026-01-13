@@ -1,8 +1,10 @@
-﻿using GoTogether.Application.DTOs.Files;
+﻿using GoTogether.API.Extensions;
+using GoTogether.Application.DTOs.Files;
 using GoTogether.Application.DTOs.Users;
 using GoTogether.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 
 namespace GoTogether.API.Controllers;
@@ -38,17 +40,11 @@ public class UsersController(IUserService userService) : ControllerBase
 
     [Authorize]
     [HttpPost("avatar")]
+    [EnableRateLimiting("strict")]
     public async Task<ActionResult> UploadAvatar(IFormFile file)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest("No file uploaded.");
-
-        if (file.Length > 5 * 1024 * 1024)
-            return BadRequest("File too large.");
-
-        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
-        if (!allowedTypes.Contains(file.ContentType))
-            return BadRequest("Invalid image type.");
+        if (!await file.IsValidImageAsync())
+            return BadRequest("Invalid image. Please upload a JPEG, PNG, or WebP under 5MB.");
 
         Guid userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 

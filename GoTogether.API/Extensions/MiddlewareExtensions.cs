@@ -5,6 +5,15 @@ namespace GoTogether.API.Extensions;
 
 public static class MiddlewareExtensions
 {
+    public static IApplicationBuilder UseApiSecurityConfiguration(this IApplicationBuilder app)
+    {
+        app.UseForwardedHeaders();
+        app.UseExceptionHandler();
+        app.UseRateLimiter();
+
+        return app;
+    }
+
     public static IApplicationBuilder UseImageLogging(this IApplicationBuilder app)
     {
         return app.Use(async (context, next) =>
@@ -26,7 +35,18 @@ public static class MiddlewareExtensions
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(Path.Combine(paths.Root, "uploads")),
-            RequestPath = "/uploads"
+            RequestPath = "/uploads",
+            OnPrepareResponse = ctx =>
+            {
+                const int durationInSeconds = 60 * 60 * 24 * 30;
+                ctx.Context.Response.Headers.CacheControl = $"public,max-age={durationInSeconds}";
+
+                ctx.Context.Response.Headers.Remove("Pragma");
+                ctx.Context.Response.Headers.Remove("Expires");
+
+                ctx.Context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+                ctx.Context.Response.Headers.Append("X-Frame-Options", "DENY");
+            }
         });
 
         return app;
