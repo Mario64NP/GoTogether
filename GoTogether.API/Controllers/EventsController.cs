@@ -44,7 +44,15 @@ public class EventsController(IEventService eventService, IUserService userServi
     }
 
     [HttpGet("{eventId}/interests")]
-    public async Task<ActionResult<IEnumerable<EventInterestResponse>>> GetEventInterests(Guid eventId) => Ok(await eventService.GetEventInterestsAsync(eventId));
+    public async Task<ActionResult<IEnumerable<EventInterestResponse>>> GetEventInterests(Guid eventId)
+    {
+        var e = await eventService.GetEventByIdAsync(eventId);
+
+        if (e is null)
+            return NoContent();
+
+        return Ok(await eventService.GetEventInterestsAsync(eventId));
+    }
 
     [Authorize]
     [HttpGet("{eventId}/interest")]

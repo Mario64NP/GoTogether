@@ -3,7 +3,7 @@
 public record EventDetailsResponse(
     Guid Id,
     string Title,
-    string Description,
+    string? Description,
     DateTime StartsAt,
     string Location,
     string Category,

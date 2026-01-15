@@ -2,13 +2,13 @@
 
 namespace GoTogether.Domain.Entities;
 
-public class Event(string Title, DateTime StartsAt, string Location, string Category, string Description) : Entity
+public class Event(string Title, DateTime StartsAt, string Location, string Category, string? Description) : Entity
 {
     public string Title { get; set; } = Title;
     public DateTime StartsAt { get; set; } = StartsAt;
     public string Location { get; set; } = Location;
     public string Category { get; set; } = Category;
-    public string Description { get; set; } = Description;
+    public string? Description { get; set; } = Description;
     public string? ImageFileName { get; private set; } = null;
 
     public ICollection<EventInterest> EventInterests { get; private set; } = [];

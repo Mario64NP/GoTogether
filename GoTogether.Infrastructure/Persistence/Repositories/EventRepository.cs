@@ -14,7 +14,7 @@ public class EventRepository(GoTogetherDbContext dbContext) : IEventRepository
 
     public async Task<Event?> GetEventByIdAsync(Guid eventId) => await dbContext.Events.FindAsync(eventId);
 
-    public async Task<Event> CreateEventAsync(string title, string description, DateTime startsAt, string location, string category)
+    public async Task<Event> CreateEventAsync(string title, string? description, DateTime startsAt, string location, string category)
     {
         Event e = new(title, startsAt, location, category, description);
 
