@@ -12,5 +12,7 @@ public class UserRepository(GoTogetherDbContext dbContext) : IUserRepository
 
     public async Task AddUserAsync(User user) => await dbContext.Users.AddAsync(user);
 
+    public async Task<IEnumerable<EventInterest>> GetInterestedEventsByUserAsync(Guid userId) => await dbContext.EventInterests.Include(ei => ei.User).Include(ei => ei.Event).Where(ei => ei.UserId == userId).ToListAsync();
+
     public async Task SaveChangesAsync() => await dbContext.SaveChangesAsync();
 }

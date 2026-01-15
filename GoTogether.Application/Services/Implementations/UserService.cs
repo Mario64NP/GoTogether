@@ -1,5 +1,6 @@
 ﻿using GoTogether.Application.Abstractions;
 using GoTogether.Application.DTOs.Files;
+using GoTogether.Application.DTOs.Interests;
 using GoTogether.Application.DTOs.Users;
 using GoTogether.Application.Services.Interfaces;
 using GoTogether.Domain.Entities;
@@ -11,6 +12,13 @@ public class UserService(IUserRepository users, IImagePathService paths, IImageS
     public async Task<UserDetailsResponse?> GetUserByIdAsync(Guid userId) => MapToDto(await users.GetUserByIdAsync(userId));
 
     public async Task<UserDetailsResponse?> GetUserByUsernameAsync(string username) => MapToDto(await users.GetUserByUsernameAsync(username));
+
+    public async Task<IEnumerable<UserInterestResponse>> GetInterestedEventsByUserAsync(Guid userId)
+    {
+        var interests = await users.GetInterestedEventsByUserAsync(userId);
+
+        return interests.Select(ei => MapToDto(ei));
+    }
 
     public async Task<bool> SetRoleAsync(string username, string role)
     {
@@ -63,4 +71,7 @@ public class UserService(IUserRepository users, IImagePathService paths, IImageS
             user.DisplayName,
             paths.GetAvatarPath(user.AvatarFileName));
     }
+
+    private UserInterestResponse MapToDto(EventInterest ei) => new(paths.GetAvatarPath(ei.User.AvatarFileName), ei.User.Username, ei.User.DisplayName, ei.Message, ei.CreatedAt,
+            ei.Event.Id, ei.Event.Title, ei.Event.StartsAt, ei.Event.Location, ei.Event.Category, paths.GetEventImagePath(ei.Event.ImageFileName), ei.Event.EventInterests.Count);
 }

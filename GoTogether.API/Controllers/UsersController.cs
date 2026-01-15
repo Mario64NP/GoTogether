@@ -1,6 +1,7 @@
 ﻿using GoTogether.API.Extensions;
 using GoTogether.Application.DTOs.Files;
 using GoTogether.Application.DTOs.Users;
+using GoTogether.Application.DTOs.Interests;
 using GoTogether.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,19 @@ public class UsersController(IUserService userService) : ControllerBase
             return NotFound();
 
         return Ok(user);
+    }
+
+    [HttpGet("{username}/interests")]
+    public async Task<ActionResult<IEnumerable<UserInterestResponse>>> GetUserInterests(string username)
+    {
+        var user = await userService.GetUserByUsernameAsync(username);
+
+        if (user is null)
+            return NotFound();
+
+        var interests = await userService.GetInterestedEventsByUserAsync(user.Id);
+
+        return Ok(interests);
     }
 
     [Authorize]

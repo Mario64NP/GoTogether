@@ -1,4 +1,5 @@
-﻿using GoTogether.Domain.Entities;
+﻿using GoTogether.Application.DTOs.Interests;
+using GoTogether.Domain.Entities;
 
 namespace GoTogether.Application.Abstractions;
 
@@ -6,6 +7,7 @@ public interface IUserRepository
 {
     Task<User?> GetUserByIdAsync(Guid userId);
     Task<User?> GetUserByUsernameAsync(string username);
+    Task<IEnumerable<EventInterest>> GetInterestedEventsByUserAsync(Guid userId);
     Task AddUserAsync(User user);
     Task SaveChangesAsync();
 }
