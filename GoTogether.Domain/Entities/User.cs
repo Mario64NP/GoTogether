@@ -6,9 +6,11 @@ public class User(string Username, string DisplayName) : Entity
 {
     public string Username { get; private set; } = Username;
     public string DisplayName { get; private set; } = DisplayName;
+    public string? Bio {  get; private set; }
     public string PasswordHash { get; private set; } = string.Empty;
     public string? AvatarFileName { get; private set; } = null;
     public UserRole Role { get; private set; } = UserRole.User;
+    public IEnumerable<string> Tags { get; private set; } = [];
 
     public ICollection<EventInterest> EventInterests { get; private set; } = [];
 
