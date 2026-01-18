@@ -38,8 +38,7 @@ public static class MiddlewareExtensions
             RequestPath = "/uploads",
             OnPrepareResponse = ctx =>
             {
-                const int durationInSeconds = 60 * 60 * 24 * 30;
-                ctx.Context.Response.Headers.CacheControl = $"public,max-age={durationInSeconds}";
+                ctx.Context.Response.Headers.CacheControl = $"public, no-cache";
 
                 ctx.Context.Response.Headers.Remove("Pragma");
                 ctx.Context.Response.Headers.Remove("Expires");
