@@ -10,6 +10,18 @@ public class UserRepository(GoTogetherDbContext dbContext) : IUserRepository
 
     public async Task<User?> GetUserByUsernameAsync(string username) => await dbContext.Users.FirstOrDefaultAsync(u => u.Username == username);
 
+    public async Task<User?> UpdateUserAsync(Guid userId, string? displayname, string? bio, IEnumerable<string>? tags)
+    {
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+            return null;
+
+        user.Update(displayname, bio, tags);
+
+        return user;
+    }
+
     public async Task AddUserAsync(User user) => await dbContext.Users.AddAsync(user);
 
     public async Task<IEnumerable<EventInterest>> GetInterestedEventsByUserAsync(Guid userId) => await dbContext.EventInterests.Include(ei => ei.User).Include(ei => ei.Event).Where(ei => ei.UserId == userId).ToListAsync();

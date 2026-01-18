@@ -13,6 +13,14 @@ public class UserService(IUserRepository users, IImagePathService paths, IImageS
 
     public async Task<UserDetailsResponse?> GetUserByUsernameAsync(string username) => MapToDto(await users.GetUserByUsernameAsync(username));
 
+    public async Task<UserDetailsResponse?> UpdateUserAsync(Guid userId, UpdateUserRequest req)
+    {
+        var user = MapToDto(await users.UpdateUserAsync(userId, req.DisplayName, req.Bio, req.Tags));
+        await users.SaveChangesAsync();
+
+        return user;
+    }
+
     public async Task<IEnumerable<UserInterestResponse>> GetInterestedEventsByUserAsync(Guid userId)
     {
         var interests = await users.GetInterestedEventsByUserAsync(userId);
@@ -58,7 +66,7 @@ public class UserService(IUserRepository users, IImagePathService paths, IImageS
 
         await users.SaveChangesAsync();
 
-        return fileName;
+        return paths.GetAvatarPath(fileName);
     }
 
     private UserDetailsResponse? MapToDto(User? user)
@@ -69,6 +77,8 @@ public class UserService(IUserRepository users, IImagePathService paths, IImageS
             user.Id,
             user.Username,
             user.DisplayName,
+            user.Bio,
+            user.Tags,
             paths.GetAvatarPath(user.AvatarFileName));
     }
 

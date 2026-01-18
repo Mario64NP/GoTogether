@@ -23,6 +23,13 @@ public class User(string Username, string DisplayName) : Entity
     public void SetAvatar(string fileName) => AvatarFileName = fileName;
 
     public void RemoveAvatar() => AvatarFileName = null;
+
+    public void Update(string? displayname, string? bio, IEnumerable<string>? tags)
+    {
+        DisplayName = displayname ?? DisplayName;
+        Bio = bio ?? string.Empty;
+        Tags = tags ?? Tags;
+    }
 }
 
 public enum UserRole

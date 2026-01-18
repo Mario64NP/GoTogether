@@ -39,6 +39,18 @@ public class UsersController(IUserService userService) : ControllerBase
         return Ok(user);
     }
 
+    [Authorize]
+    [HttpPatch("{username}")]
+    public async Task<ActionResult<UserDetailsResponse>> UpdateUser(string username, UpdateUserRequest req)
+    {
+        var user = await userService.GetUserByUsernameAsync(username);
+
+        if (user is null)
+            return NotFound();
+
+        return Ok(await userService.UpdateUserAsync(user.Id, req));
+    }
+
     [HttpGet("{username}/interests")]
     public async Task<ActionResult<IEnumerable<UserInterestResponse>>> GetUserInterests(string username)
     {

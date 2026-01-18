@@ -8,6 +8,7 @@ public interface IUserService
 {
     Task<UserDetailsResponse?> GetUserByIdAsync(Guid userId);
     Task<UserDetailsResponse?> GetUserByUsernameAsync(string username);
+    Task<UserDetailsResponse?> UpdateUserAsync(Guid userId, UpdateUserRequest req);
     Task<IEnumerable<UserInterestResponse>> GetInterestedEventsByUserAsync(Guid userId);
     Task<bool> SetRoleAsync(string username, string role);
     Task<string?> SaveAvatarAsync(Guid userId, FileRequest req);
