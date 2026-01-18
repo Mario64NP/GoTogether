@@ -17,5 +17,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.DisplayName)
             .IsRequired()
             .HasMaxLength(50);
+
+        builder.Property(u => u.Bio)
+            .HasMaxLength(250);
     }
 }
