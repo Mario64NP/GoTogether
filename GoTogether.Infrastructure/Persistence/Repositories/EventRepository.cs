@@ -23,18 +23,6 @@ public class EventRepository(GoTogetherDbContext dbContext) : IEventRepository
         return e;
     }
 
-    public async Task<Event?> UpdateEventAsync(Guid eventId, string? title, string? description, DateTime? startsAt, string? location, string? category)
-    {
-        var ev = await dbContext.Events.FindAsync(eventId);
-        
-        if (ev is null)
-            return null;
-
-        ev.Update(title, description, startsAt, location, category);
-
-        return ev;
-    }
-
     public async Task DeleteEventAsync(Guid eventId)
     {
         await dbContext.Events.Where(e => e.Id == eventId).ExecuteDeleteAsync(); 

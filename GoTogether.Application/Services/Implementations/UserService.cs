@@ -15,10 +15,14 @@ public class UserService(IUserRepository users, IImagePathService paths, IImageS
 
     public async Task<UserDetailsResponse?> UpdateUserAsync(Guid userId, UpdateUserRequest req)
     {
-        var user = MapToDto(await users.UpdateUserAsync(userId, req.DisplayName, req.Bio, req.Tags));
+        var user = await users.GetUserByIdAsync(userId);
+        if (user is null)
+            return null;
+
+        user.Update(req.DisplayName, req.Bio, req.Tags);
         await users.SaveChangesAsync();
 
-        return user;
+        return MapToDto(user);
     }
 
     public async Task<IEnumerable<UserInterestResponse>> GetInterestedEventsByUserAsync(Guid userId)
@@ -49,6 +53,7 @@ public class UserService(IUserRepository users, IImagePathService paths, IImageS
         }
 
         await users.SaveChangesAsync();
+
         return true;
     }
 

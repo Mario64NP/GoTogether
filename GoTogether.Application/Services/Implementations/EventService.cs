@@ -34,9 +34,14 @@ public class EventService(IEventRepository events, IImagePathService paths, IIma
 
     public async Task<EventDetailsResponse?> UpdateEventAsync(Guid eventId, UpdateEventRequest req)
     {
-        var e = MapToDto(await events.UpdateEventAsync(eventId, req.Title, req.Description, req.StartsAt, req.Location, req.Category));
+        var e = await events.GetEventByIdAsync(eventId);
+        if (e is null)
+            return null;
+
+        e.Update(req.Title, req.Description, req.StartsAt, req.Location, req.Category);
         await events.SaveChangesAsync();
-        return e;
+        
+        return MapToDto(e);
     }
 
     public Task DeleteEventAsync(Guid eventId) => events.DeleteEventAsync(eventId);

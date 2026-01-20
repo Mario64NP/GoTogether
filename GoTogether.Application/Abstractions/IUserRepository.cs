@@ -7,7 +7,7 @@ public interface IUserRepository
 {
     Task<User?> GetUserByIdAsync(Guid userId);
     Task<User?> GetUserByUsernameAsync(string username);
-    Task<User?> UpdateUserAsync(Guid userId, string? displayname, string? bio, IEnumerable<string>? tags);
+    Task<User?> GetUserByEmailAsync(string email);
     Task<IEnumerable<EventInterest>> GetInterestedEventsByUserAsync(Guid userId);
     Task AddUserAsync(User user);
     Task SaveChangesAsync();
