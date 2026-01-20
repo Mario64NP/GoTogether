@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 
-namespace GoTogether.Infrastructure.Identity;
+namespace GoTogether.Application.Services.Implementations;
 
 public class IdentityService(IUserRepository users, IPasswordHasher<User> hasher, IAuthTokenService jwt, IImagePathService paths, IEmailService emails, IConfiguration config) : IIdentityService
 {
