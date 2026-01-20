@@ -11,5 +11,6 @@ public interface IUserService
     Task<UserDetailsResponse?> UpdateUserAsync(Guid userId, UpdateUserRequest req);
     Task<IEnumerable<UserInterestResponse>> GetInterestedEventsByUserAsync(Guid userId);
     Task<bool> SetRoleAsync(string username, string role);
+    Task<bool> SetEmailAsync(string username, string email);
     Task<string?> SaveAvatarAsync(Guid userId, FileRequest req);
 }

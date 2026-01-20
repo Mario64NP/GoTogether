@@ -1,4 +1,5 @@
 ﻿using GoTogether.Application.DTOs.Auth;
+using GoTogether.Application.DTOs.Common;
 using GoTogether.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -11,14 +12,20 @@ public class AuthController(IIdentityService identityService) : ControllerBase
 {
     [HttpPost("register")]
     [EnableRateLimiting("strict")]
-    public async Task<ActionResult<AuthResponse>> Register(RegisterRequest req)
+    public async Task<ActionResult> Register(RegisterRequest req)
     {
         var result = await identityService.RegisterAsync(req);
 
-        if (result is null)
-            return Conflict("Username already taken");
+        return result.IsSuccess ? Ok() : HandleError(result);
+    }
 
-        return Ok(result);
+    [HttpGet("verify")]
+    [EnableRateLimiting("strict")]
+    public async Task<ActionResult> VerifyEmail([FromQuery] Guid userId, [FromQuery] string token)
+    {
+        var result = await identityService.VerifyEmailAsync(userId, token);
+
+        return result.IsSuccess ? Ok("Email verified! You can log in now.") : HandleError(result);
     }
 
     [HttpPost("login")]
@@ -27,9 +34,15 @@ public class AuthController(IIdentityService identityService) : ControllerBase
     {
         var result = await identityService.LoginAsync(req);
 
-        if (result is null)
-            return Unauthorized("Invalid username or password");
-
-        return Ok(result);
+        return result.IsSuccess ? Ok(result.Value) : HandleError(result);
     }
+
+    private ObjectResult HandleError(Result result) => result.ErrorType switch
+    {
+        ErrorType.Conflict => Conflict(result.Error),
+        ErrorType.Unauthorized => Unauthorized(result.Error),
+        ErrorType.Forbidden => StatusCode(403, result.Error),
+        ErrorType.NotFound => NotFound(result.Error),
+        _ => BadRequest(result.Error)
+    };
 }

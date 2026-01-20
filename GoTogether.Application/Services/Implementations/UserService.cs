@@ -57,6 +57,26 @@ public class UserService(IUserRepository users, IImagePathService paths, IImageS
         return true;
     }
 
+    public async Task<bool> SetEmailAsync(string username, string email)
+    {
+        var user = await users.GetUserByUsernameAsync(username);
+        if (user is null)
+            return false;
+
+        var userOfEmail = await users.GetUserByEmailAsync(email);
+        if (userOfEmail is not null)
+            return false;
+
+        if (user.SetEmail(email))
+        {
+            await users.SaveChangesAsync();
+
+            return true;
+        }
+
+        return false;
+    }
+
     public async Task<string?> SaveAvatarAsync(Guid userId, FileRequest req)
     {
         var user = await users.GetUserByIdAsync(userId);

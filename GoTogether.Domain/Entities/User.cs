@@ -1,13 +1,16 @@
 ﻿using GoTogether.Domain.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace GoTogether.Domain.Entities;
 
-public class User(string Username, string DisplayName) : Entity
+public class User(string username, string displayName, string email) : Entity
 {
-    public string Username { get; private set; } = Username;
-    public string DisplayName { get; private set; } = DisplayName;
+    public string Username { get; private set; } = username;
+    public string DisplayName { get; private set; } = displayName;
     public string? Bio {  get; private set; }
-    public string Email { get; private set; } = string.Empty;
+    public string Email { get; private set; } = email;
+    public bool IsEmailVerified { get; private set; }
+    public string? EmailVerificationToken { get; private set; }
     public string PasswordHash { get; private set; } = string.Empty;
     public string? AvatarFileName { get; private set; } = null;
     public UserRole Role { get; private set; } = UserRole.User;
@@ -25,7 +28,27 @@ public class User(string Username, string DisplayName) : Entity
 
     public void RemoveAvatar() => AvatarFileName = null;
 
-    public void SetEmail(string email) => Email = email;
+    public bool SetEmail(string email)
+    {
+        EmailAddressAttribute detector = new();
+        if (detector.IsValid(email))
+        {
+            Email = email;
+            IsEmailVerified = false;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public void VerifyEmail()
+    {
+        IsEmailVerified = true;
+        EmailVerificationToken = null;
+    }
+
+    public void SetVerificationToken(string token) => EmailVerificationToken = token;
 
     public void Update(string? displayname, string? bio, IEnumerable<string>? tags)
     {

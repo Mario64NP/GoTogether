@@ -1,6 +1,7 @@
 ﻿using GoTogether.Application.Abstractions;
 using GoTogether.Application.Services.Interfaces;
 using GoTogether.Domain.Entities;
+using GoTogether.Infrastructure.Email;
 using GoTogether.Infrastructure.Files;
 using GoTogether.Infrastructure.Identity;
 using GoTogether.Infrastructure.Persistence;
@@ -32,6 +33,8 @@ public static class DependencyInjection
 
         services.AddScoped<IImagePathService, ImagePathService>();
         services.AddScoped<IImageStorageService, ImageStorageService>();
+
+        services.AddScoped<IEmailService, ConsoleEmailService>();
 
         return services;
     }
