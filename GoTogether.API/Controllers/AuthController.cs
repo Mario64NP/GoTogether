@@ -16,7 +16,7 @@ public class AuthController(IIdentityService identityService) : ControllerBase
     {
         var result = await identityService.RegisterAsync(req);
 
-        return result.IsSuccess ? Ok() : HandleError(result);
+        return result.IsSuccess ? Ok("Your account has been created. Please verify your email, and then you can log in.") : HandleError(result);
     }
 
     [HttpGet("verify")]
