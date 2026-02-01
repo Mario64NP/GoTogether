@@ -9,8 +9,12 @@ public class UserCommands(IUserService userService)
     {
         switch (action)
         {
+            case "set-email":
+                await SetEmailAsync(args);
+                break;
+
             case "set-role":
-                await SetRole(args);
+                await SetRoleAsync(args);
                 break;
 
             default:
@@ -19,7 +23,24 @@ public class UserCommands(IUserService userService)
         }
     }
 
-    public async Task SetRole(string[] args)
+    public async Task SetEmailAsync(string[] args)
+    {
+        var username = ArgParser.Get(args, "--username");
+        var email = ArgParser.Get(args, "--email");
+
+        if (string.IsNullOrWhiteSpace(username) ||  string.IsNullOrWhiteSpace(email))
+        {
+            Console.WriteLine("Invalid username or email.");
+            return;
+        }
+
+        if (await userService.SetEmailAsync(username, email))
+            Console.WriteLine($"{username}'s email has been changed to {email}.");
+        else
+            Console.WriteLine("Couldn't change the user's email.");
+    }
+
+    public async Task SetRoleAsync(string[] args)
     {
         var username = ArgParser.Get(args, "--username");
         var role = ArgParser.Get(args, "--role");
