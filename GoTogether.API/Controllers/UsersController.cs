@@ -34,7 +34,7 @@ public class UsersController(IUserService userService) : ControllerBase
         var user = await userService.GetUserByUsernameAsync(username);
 
         if (user is null)
-            return NotFound();
+            return NotFound("");
 
         return Ok(user);
     }
